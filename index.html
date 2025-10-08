@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snowman POV</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <h2>You are a snowman :D⛄</h2>
+  <div id="game-area">
+    <div id="scoreboard"></div>
+    <button id="pause-btn" aria-label="Pause game">⏸</button>
+    <div id="menu-overlay" class="hidden" aria-hidden="true">
+      <div class="menu">  
+        <h3>Let's Snowball everyone!⛄</h3>
+        <p id="menu-subtitle">Ready to play?</p>
+        <div class="menu-buttons">
+          <select id="mode-select" aria-label="Select game mode">
+            <option value="16">16 Balls</option>
+            <option value="32">32 Balls</option>
+            <option value="∞" selected>Infinite</option>
+          </select>
+          <button id="start-btn">Start</button>
+          <button id="resume-btn" class="hidden">Resume</button>
+          <button id="exit-btn">Exit</button>
+        </div>
+        <div id="menu-best" class="menu-best" aria-live="polite"></div>
+      </div>
+    </div>
+    <canvas id="game-canvas"></canvas>
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
