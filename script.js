@@ -131,7 +131,7 @@ function hideMenu() {
   isPaused = false;
   menuOverlay.classList.add("hidden");
   menuOverlay.setAttribute("aria-hidden", "true");
-  if (pauseBtn) pauseBtn.textContent = "⏸";
+  if (pauseBtn) pauseBtn.textContent = "⏸︎";
 }
 
 /** Reset the game state to a fresh start. */
@@ -380,7 +380,7 @@ const gravity = 0.5;
 const maxPower = 25;
 const flickWindowMs = 120; // time window to measure flick speed
 const maxFlickSpeed = 24; // pixels per frame cap
-const minFlickSpeed = 8;  // minimum pixels per frame so slow flicks still move
+const minFlickSpeed = 4;  // minimum pixels per frame so slow flicks still move
 
 function addDragSample(x, y) {
   const now = performance.now();
@@ -411,8 +411,9 @@ function computeFlickVelocity() {
   // Clamp speed
   const speed = Math.hypot(vx, vy);
   if (speed === 0) return { vx: 0, vy: 0 };
-  const clamped = Math.min(maxFlickSpeed, Math.max(minFlickSpeed, speed));
+  const clamped = Math.min(maxFlickSpeed, Math.max(0, speed));
   const scale = clamped / speed;
+  console.log(`Flick speed: ${speed.toFixed(2)} -> clamped: ${clamped.toFixed(2)}`);
   return { vx: vx * scale, vy: vy * scale };
 }
 
@@ -681,7 +682,7 @@ function gameLoop() {
 
   if (!isPaused && !isMenuOpen && ball) {
     // Straight-line with scaled gravity based on launch speed
-    const g = getEffectiveGravityForSpeed(ball.launchSpeed || minFlickSpeed);
+    const g = getEffectiveGravityForSpeed(ball.launchSpeed);
     ball.vy += g;
     ball.x += ball.vx;
     ball.y += ball.vy;
