@@ -137,6 +137,7 @@ function hideMenu() {
 /** Reset the game state to a fresh start. */
 function resetGame() {
   score = 0;
+  hits = 0;
   misses = 0;
   ball = null;
   targets = []; // Clear all targets
