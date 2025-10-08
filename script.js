@@ -433,7 +433,7 @@ function drawTrajectory() {
     // Use current flick speed (or minimum) for preview length
     const angle = Math.atan2(dragEnd.y - originY, dragEnd.x - originX);
     const flick = computeFlickVelocity();
-    const speed = flick ? Math.hypot(flick.vx, flick.vy) : minFlickSpeed;
+    const speed = flick ? Math.hypot(flick.vx, flick.vy) : 0;
     const g = getEffectiveGravityForSpeed(speed);
     let stepX = Math.cos(angle) * speed;
     let stepY = Math.sin(angle) * speed;
@@ -736,4 +736,4 @@ function gameLoop() {
 // Initial state: show menu, wait for Start
 spawnTarget();
 showMenu('initial');
-gameLoop();
+requestAnimationFrame(gameLoop); 
