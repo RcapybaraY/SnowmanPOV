@@ -261,9 +261,10 @@ function spawnTarget() {
     const radius = minR + (maxR - minR) * depth;
 
     // Speed slightly faster near bottom, slower near top
-    const minSpeed = 0.5;
+    const minSpeed = 2.0;
     const maxSpeed = 2.7;
     const speed = minSpeed + (maxSpeed - minSpeed) * depth;
+    // const speed = minSpeed + (maxSpeed - minSpeed) * Math.pow(depth, 1.5); // Exponential scaling
 
     // Random direction and spawn side
     const dir = Math.random() < 0.5 ? -1 : 1; // -1: right->left, 1: left->right
@@ -652,12 +653,17 @@ canvas.addEventListener("touchend", (e) => {
 // Main Loop
 // =============================
 /** Update game state and render a frame. */
-function gameLoop() {
+let lastTime = performance.now();
+function gameLoop(currentTime) {
+  const gameTick = 90 * (currentTime - lastTime) / 1000; // seconds
+  lastTime = currentTime;
+  // console.log(`gameTick: ${gameTick.toFixed(4)}s`);
+
   // Update moving targets when active
   if (!isPaused && !isMenuOpen) {
     // Move all targets
     targets.forEach(target => {
-      target.x += target.vx;
+      target.x += target.vx * gameTick;
     });
 
     // Remove targets that left the screen and spawn new ones
@@ -682,10 +688,10 @@ function gameLoop() {
 
   if (!isPaused && !isMenuOpen && ball) {
     // Straight-line with scaled gravity based on launch speed
-    const g = getEffectiveGravityForSpeed(ball.launchSpeed);
+    const g = getEffectiveGravityForSpeed(ball.launchSpeed) * gameTick;
     ball.vy += g;
-    ball.x += ball.vx;
-    ball.y += ball.vy;
+    ball.x += ball.vx * gameTick;
+    ball.y += ball.vy * gameTick;
     // console.log(`Drift: ${ball.driftMultiplier} Ball position: (${ball.x.toFixed(2)}, ${ball.y.toFixed(2)}) Velocity: (${ball.vx.toFixed(2)}, ${ball.vy.toFixed(2)})`);
 
     // Check for hit using ball's dynamic visible radius
