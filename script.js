@@ -323,7 +323,8 @@ function draw() {
 
   // Draw ball as snowball image
   if (ball) {
-    ball.size = Math.max(10, ball.size - ball.shrinkSpeed); // shrink but don't go below 10px
+    ball.size = Math.max(ball.minSize, ball.size - ball.shrinkSpeed); // shrink but don't go below 15px
+    // console.log(`Ball size: ${ball.size.toFixed(2)} (min: ${ball.minSize}), shrinkSpeed: ${ball.shrinkSpeed.toFixed(3)} `);
     if (snowballImg.complete && snowballImg.naturalWidth > 0) {
       ctx.drawImage(snowballImg, ball.x - ball.size / 2, ball.y - ball.size / 2, ball.size, ball.size);
     }
@@ -414,7 +415,6 @@ function computeFlickVelocity() {
   if (speed === 0) return { vx: 0, vy: 0 };
   const clamped = Math.min(maxFlickSpeed, Math.max(0, speed));
   const scale = clamped / speed;
-  console.log(`Flick speed: ${speed.toFixed(2)} -> clamped: ${clamped.toFixed(2)}`);
   return { vx: vx * scale, vy: vy * scale };
 }
 
@@ -464,7 +464,7 @@ canvas.addEventListener("mousedown", (e) => {
   const mouseY = e.clientY - rect.top;
   const crossX = canvas.width / 2;
   const crossY = canvas.height - launchOffset;
-  const crossRadius = 30; // Allowable click radius for cross
+  const crossRadius = 40; // Allowable click radius for cross
   const dist = Math.hypot(mouseX - crossX, mouseY - crossY);
   if (dist <= crossRadius) {
     isDragging = true;
@@ -517,7 +517,9 @@ canvas.addEventListener("mouseup", (e) => {
     const vy = dirY * speed;
 
     const initialSize = 50; // size from 20 to 50
-    const shrinkSpeed = 0.1 + (speed / maxFlickSpeed) * 0.3; // shrink faster with higher flick speed
+    const shrinkSpeed = 0.01 + Math.pow(speed / maxFlickSpeed, 2) * 0.3; // shrink faster with higher flick speed
+    const minSize = 30 - (speed / maxFlickSpeed) * 5; // smaller min size with higher speed
+    // console.log(`Launch speed: ${speed.toFixed(2)}, shrinkSpeed: ${shrinkSpeed.toFixed(3)}, minSize: ${minSize.toFixed(2)}`);
 
     ball = {
       x: originX,
@@ -527,6 +529,7 @@ canvas.addEventListener("mouseup", (e) => {
       driftMultiplier: 0,
       launchSpeed: speed,
       size: initialSize,
+      minSize: minSize,
       shrinkSpeed: shrinkSpeed
     };
     // consume one ammo after launching
@@ -561,7 +564,7 @@ canvas.addEventListener("touchstart", (e) => {
   const pos = getTouchPos(e);
   const crossX = canvas.width / 2;
   const crossY = canvas.height - launchOffset;
-  const crossRadius = 30; // Same as mouse
+  const crossRadius = 40; // Same as mouse
   const dist = Math.hypot(pos.x - crossX, pos.y - crossY);
   if (dist <= crossRadius) {
     isDragging = true;
@@ -627,7 +630,8 @@ canvas.addEventListener("touchend", (e) => {
     const vy = dirY * speed;
 
     const initialSize = 50; // size from 20 to 50
-    const shrinkSpeed = 0.1 + (speed / maxFlickSpeed) * 0.3; // shrink faster with higher flick speed
+    const shrinkSpeed = 0.01 + Math.pow(speed / maxFlickSpeed, 2) * 0.3; // shrink faster with higher flick speed
+    const minSize = 30 - Math.pow(speed / maxFlickSpeed, 2) * 5; // smaller min size with higher speed
 
     ball = {
       x: originX,
@@ -637,6 +641,7 @@ canvas.addEventListener("touchend", (e) => {
       driftMultiplier: 0,
       launchSpeed: speed,
       size: initialSize,
+      minSize: minSize,
       shrinkSpeed: shrinkSpeed
     };
     // consume one ammo after launching
@@ -655,9 +660,8 @@ canvas.addEventListener("touchend", (e) => {
 /** Update game state and render a frame. */
 let lastTime = performance.now();
 function gameLoop(currentTime) {
-  const gameTick = 90 * (currentTime - lastTime) / 1000; // seconds
+  const gameTick = 75 * (currentTime - lastTime) / 1000; // seconds
   lastTime = currentTime;
-  // console.log(`gameTick: ${gameTick.toFixed(4)}s`);
 
   // Update moving targets when active
   if (!isPaused && !isMenuOpen) {
@@ -692,8 +696,6 @@ function gameLoop(currentTime) {
     ball.vy += g;
     ball.x += ball.vx * gameTick;
     ball.y += ball.vy * gameTick;
-    // console.log(`Drift: ${ball.driftMultiplier} Ball position: (${ball.x.toFixed(2)}, ${ball.y.toFixed(2)}) Velocity: (${ball.vx.toFixed(2)}, ${ball.vy.toFixed(2)})`);
-
     // Check for hit using ball's dynamic visible radius
     const ballRadius = ball ? (ball.size ? ball.size / 2 : 15) : 15;
 
@@ -723,7 +725,8 @@ function gameLoop(currentTime) {
 
     if (hitTarget) {
       ball = null;
-    } else if (ball.y < 0 || ball.x < 0 || ball.x > canvas.width || ball.y > canvas.height) {
+    } else if (ball.x < 0 || ball.x > canvas.width || ball.y > canvas.height) {
+      // console.log(`Ball missed and left screen. ${ball.x}, ${ball.y}`);
       ball = null;
     }
 
